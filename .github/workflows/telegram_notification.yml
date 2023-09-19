@@ -26,5 +26,8 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
-          message: |
-            A new PR is raised [View all PR's](https://github.com/<user>/<repo>/pulls)
+          run: |
+            MESSAGE="A pull request has been merged into the main branch of the repository: $GITHUB_REPOSITORY"
+            URL="https://github.com/$GITHUB_REPOSITORY/pull/${{ github.event.pull_request.number }}"
+            MESSAGE="$MESSAGE\nPR URL: $URL"
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -d "chat_id=$TELEGRAM_CHAT_ID&text=$MESSAGE"
