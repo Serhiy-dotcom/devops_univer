@@ -9,22 +9,19 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  notification:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+    - name: Check out code
+      uses: actions/checkout@v2
 
-      # Runs the telegram notify action to send a notification
-      - name: Telegram Notify
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: markdown
-          message: |
-            A new PR is raised [View all PR's](https://github.com/<user>/<repo>/pulls)
+    - name: Send Telegram Notification
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        PR_URL="https://github.com/$GITHUB_REPOSITORY/pull/${{ github.event.pull_request.number }}"
+        MESSAGE="A pull request has been merged into the main branch of the repository: $PR_TITLE\nPR URL: $PR_URL"
+        curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -d "chat_id=$TELEGRAM_CHAT_ID&text=$MESSAGE"
